@@ -1,9 +1,19 @@
 use std::str::FromStr;
-use std::string::ParseError;
 
 pub struct Submarine {
     horizontal: isize,
     depth: isize,
+    aim: isize,
+}
+
+impl Submarine {
+    pub fn new() -> Self {
+        Submarine {
+            horizontal: 0,
+            depth: 0,
+            aim: 0,
+        }
+    }
 }
 
 pub enum Direction {
@@ -63,19 +73,33 @@ pub fn input_generator(input: &str) -> Vec<Instruction> {
 
 #[aoc(day2, part1)]
 pub fn solve_part1(input: &[Instruction]) -> isize {
-    let mut submarine = Submarine {
-        horizontal: 0,
-        depth: 0,
-    };
+    let mut submarine = Submarine::new();
 
     input
         .iter()
-        .for_each(|instruction| instruction.apply(&mut submarine));
+        .for_each(|instruction| match instruction.direction {
+            Direction::FORWARD => submarine.horizontal += instruction.amount,
+            Direction::UP => submarine.depth -= instruction.amount,
+            Direction::DOWN => submarine.depth += instruction.amount,
+        });
 
     submarine.horizontal * submarine.depth
 }
 
 #[aoc(day2, part2)]
-pub fn solve_part2(input: &[Instruction]) -> usize {
-    0
+pub fn solve_part2(input: &[Instruction]) -> isize {
+    let mut submarine = Submarine::new();
+
+    input
+        .iter()
+        .for_each(|instruction| match instruction.direction {
+            Direction::FORWARD => {
+                submarine.horizontal += instruction.amount;
+                submarine.depth += instruction.amount * submarine.aim
+            }
+            Direction::UP => submarine.aim -= instruction.amount,
+            Direction::DOWN => submarine.aim += instruction.amount,
+        });
+
+    submarine.horizontal * submarine.depth
 }
