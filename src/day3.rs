@@ -23,10 +23,7 @@ fn get_gamma_rate(numbers: &[usize], width: usize) -> usize {
 
     (0..width).rev().fold(0, |result, number| {
         // Use bit shifting for each column to deduce if that index is a 1 or a 0, count those occurrences
-        let count = numbers
-            .iter()
-            .filter(|n| ((*n >> number) & 1) == 1)
-            .count();
+        let count = numbers.iter().filter(|n| ((*n >> number) & 1) == 1).count();
 
         // If we have more ones than zeroes, OR 1, otherwise OR 0, then shift
         // Cast boolean to usize to get 0/1
@@ -36,6 +33,51 @@ fn get_gamma_rate(numbers: &[usize], width: usize) -> usize {
 
 fn get_epsilon_rate(gamma_rate: usize, width: usize) -> usize {
     (!gamma_rate) & !(usize::MAX << width)
+}
+
+fn get_oxygen_generator_rating(numbers: &[usize], width: usize) -> usize {
+    let mut values = Vec::from(numbers);
+
+    (0..width).rev().for_each(|column| {
+        // Find all indices with 1s
+        let mut indices = vec![0; values.len()];
+        {
+            indices = values
+                .iter()
+                .enumerate()
+                .filter(|(i, n)| ((*n >> column) & 1) == 1)
+                .map(|(i, n)| i)
+                .collect::<Vec<usize>>();
+        }
+
+        // Only keep the values with the most 1s or 0s, this can probably be a bit more elegant
+        let mut new_values = values.clone();
+
+        if indices.len() >= divide_by_2_round_up(values.len()) {
+            // More 1 bits, keep ones (keep indices)
+            new_values = new_values
+                .iter()
+                .enumerate()
+                .filter(|(index, value)| indices.contains(index))
+                .map(|(index, value)| *value)
+                .collect();
+        } else {
+            // More 0 bits, keep zeroes (remove indices)
+            new_values = new_values
+                .iter()
+                .enumerate()
+                .filter(|(index, value)| !indices.contains(index))
+                .map(|(index, value)| *value)
+                .collect();
+        }
+
+        values = new_values;
+    });
+
+    // There is now only 1 value left
+    assert_eq!(values.len(), 1);
+
+    values[0]
 }
 
 #[aoc(day3, part1)]
@@ -58,11 +100,7 @@ mod tests {
     #[test]
     fn test_get_gamma_rate_3() {
         let width = 3;
-        let numbers = vec![
-            0b111,
-            0b100,
-            0b000,
-        ];
+        let numbers = vec![0b111, 0b100, 0b000];
 
         assert_eq!(0b100, get_gamma_rate(&numbers, width))
     }
@@ -71,18 +109,8 @@ mod tests {
     fn test_gamma_rate_5() {
         let width = 5;
         let numbers = vec![
-            0b00100,
-            0b11110,
-            0b10110,
-            0b10111,
-            0b10101,
-            0b01111,
-            0b00111,
-            0b11100,
-            0b10000,
-            0b11001,
-            0b00010,
-            0b01010,
+            0b00100, 0b11110, 0b10110, 0b10111, 0b10101, 0b01111, 0b00111, 0b11100, 0b10000,
+            0b11001, 0b00010, 0b01010,
         ];
 
         assert_eq!(0b10110, get_gamma_rate(&numbers, width))
@@ -95,5 +123,16 @@ mod tests {
         let expected_epsilon = 0b01001;
 
         assert_eq!(expected_epsilon, get_epsilon_rate(gamma, width))
+    }
+
+    #[test]
+    fn test_oxygen_generator() {
+        let width = 5;
+        let numbers = vec![
+            0b00100, 0b11110, 0b10110, 0b10111, 0b10101, 0b01111, 0b00111, 0b11100, 0b10000,
+            0b11001, 0b00010, 0b01010,
+        ];
+
+        assert_eq!(0b10111, get_oxygen_generator_rating(&numbers, width))
     }
 }
