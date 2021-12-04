@@ -17,9 +17,9 @@ impl Submarine {
 }
 
 pub enum Direction {
-    FORWARD,
-    UP,
-    DOWN,
+    Forward,
+    Up,
+    Down,
 }
 
 impl FromStr for Direction {
@@ -27,9 +27,9 @@ impl FromStr for Direction {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "forward" => Ok(Direction::FORWARD),
-            "up" => Ok(Direction::UP),
-            "down" => Ok(Direction::DOWN),
+            "forward" => Ok(Direction::Forward),
+            "up" => Ok(Direction::Up),
+            "down" => Ok(Direction::Down),
             _ => Err(()),
         }
     }
@@ -43,9 +43,9 @@ pub struct Instruction {
 impl Instruction {
     pub fn apply(&self, submarine: &mut Submarine) {
         match self.direction {
-            Direction::FORWARD => submarine.horizontal += self.amount,
-            Direction::UP => submarine.depth -= self.amount,
-            Direction::DOWN => submarine.depth += self.amount,
+            Direction::Forward => submarine.horizontal += self.amount,
+            Direction::Up => submarine.depth -= self.amount,
+            Direction::Down => submarine.depth += self.amount,
         }
     }
 }
@@ -78,9 +78,9 @@ pub fn solve_part1(input: &[Instruction]) -> isize {
     input
         .iter()
         .for_each(|instruction| match instruction.direction {
-            Direction::FORWARD => submarine.horizontal += instruction.amount,
-            Direction::UP => submarine.depth -= instruction.amount,
-            Direction::DOWN => submarine.depth += instruction.amount,
+            Direction::Forward => submarine.horizontal += instruction.amount,
+            Direction::Up => submarine.depth -= instruction.amount,
+            Direction::Down => submarine.depth += instruction.amount,
         });
 
     submarine.horizontal * submarine.depth
@@ -93,12 +93,12 @@ pub fn solve_part2(input: &[Instruction]) -> isize {
     input
         .iter()
         .for_each(|instruction| match instruction.direction {
-            Direction::FORWARD => {
+            Direction::Forward => {
                 submarine.horizontal += instruction.amount;
                 submarine.depth += instruction.amount * submarine.aim
             }
-            Direction::UP => submarine.aim -= instruction.amount,
-            Direction::DOWN => submarine.aim += instruction.amount,
+            Direction::Up => submarine.aim -= instruction.amount,
+            Direction::Down => submarine.aim += instruction.amount,
         });
 
     submarine.horizontal * submarine.depth

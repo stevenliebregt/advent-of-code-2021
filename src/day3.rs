@@ -35,20 +35,21 @@ fn get_epsilon_rate(gamma_rate: usize, width: usize) -> usize {
     (!gamma_rate) & !(usize::MAX << width)
 }
 
+fn get_indices_of_ones_at_column(numbers: &[usize], column: usize) -> Vec<usize> {
+    numbers
+        .iter()
+        .enumerate()
+        .filter(|(_, n)| ((*n >> column) & 1) == 1)
+        .map(|(i, _)| i)
+        .collect()
+}
+
 fn get_oxygen_generator_rating(numbers: &[usize], width: usize) -> usize {
     let mut values = Vec::from(numbers);
 
     (0..width).rev().for_each(|column| {
         // Find all indices with 1s
-        let mut indices = vec![0; values.len()];
-        {
-            indices = values
-                .iter()
-                .enumerate()
-                .filter(|(i, n)| ((*n >> column) & 1) == 1)
-                .map(|(i, n)| i)
-                .collect::<Vec<usize>>();
-        }
+        let indices = get_indices_of_ones_at_column(&values, column);
 
         // Only keep the values with the most 1s or 0s, this can probably be a bit more elegant
         let mut new_values = values.clone();
@@ -58,21 +59,62 @@ fn get_oxygen_generator_rating(numbers: &[usize], width: usize) -> usize {
             new_values = new_values
                 .iter()
                 .enumerate()
-                .filter(|(index, value)| indices.contains(index))
-                .map(|(index, value)| *value)
+                .filter(|(index, _)| indices.contains(index))
+                .map(|(_, value)| *value)
                 .collect();
         } else {
             // More 0 bits, keep zeroes (remove indices)
             new_values = new_values
                 .iter()
                 .enumerate()
-                .filter(|(index, value)| !indices.contains(index))
-                .map(|(index, value)| *value)
+                .filter(|(index, _)| !indices.contains(index))
+                .map(|(_, value)| *value)
                 .collect();
         }
 
         values = new_values;
     });
+
+    // There is now only 1 value left
+    assert_eq!(values.len(), 1);
+
+    values[0]
+}
+
+fn get_co2_scrubber_rating(numbers: &[usize], width: usize) -> usize {
+    let mut values = Vec::from(numbers);
+
+    for column in (0..width).rev() {
+        // Find all indices with 1s
+        let indices = get_indices_of_ones_at_column(&values, column);
+
+        // Only keep the values with the most 1s or 0s, this can probably be a bit more elegant
+        let mut new_values = values.clone();
+
+        if indices.len() >= divide_by_2_round_up(values.len()) {
+            // More 1 bits, keep ones (remove indices)
+            new_values = new_values
+                .iter()
+                .enumerate()
+                .filter(|(index, _)| !indices.contains(index))
+                .map(|(_, value)| *value)
+                .collect();
+        } else {
+            // More 0 bits, keep zeroes (keep indices)
+            new_values = new_values
+                .iter()
+                .enumerate()
+                .filter(|(index, _)| indices.contains(index))
+                .map(|(_, value)| *value)
+                .collect();
+        }
+
+        values = new_values;
+
+        if values.len() == 1 {
+            break;
+        }
+    }
 
     // There is now only 1 value left
     assert_eq!(values.len(), 1);
@@ -90,7 +132,10 @@ pub fn solve_part1(input: &Input) -> usize {
 
 #[aoc(day3, part2)]
 pub fn solve_part2(input: &Input) -> usize {
-    0
+    let oxygen_generator_rating = get_oxygen_generator_rating(&input.numbers, input.number_width);
+    let co2_scrubber_rating = get_co2_scrubber_rating(&input.numbers, input.number_width);
+
+    oxygen_generator_rating * co2_scrubber_rating
 }
 
 #[cfg(test)]
@@ -134,5 +179,16 @@ mod tests {
         ];
 
         assert_eq!(0b10111, get_oxygen_generator_rating(&numbers, width))
+    }
+
+    #[test]
+    fn test_co2_scrubber() {
+        let width = 5;
+        let numbers = vec![
+            0b00100, 0b11110, 0b10110, 0b10111, 0b10101, 0b01111, 0b00111, 0b11100, 0b10000,
+            0b11001, 0b00010, 0b01010,
+        ];
+
+        assert_eq!(0b01010, get_co2_scrubber_rating(&numbers, width))
     }
 }
