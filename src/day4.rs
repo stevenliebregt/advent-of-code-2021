@@ -110,7 +110,7 @@ pub struct Bingo {
 
 impl Bingo {
     pub fn from_input(input: &str) -> Self {
-        let mut lines = input.lines();
+        let mut lines = input.trim_end().lines();
         let numbers = lines
             .next()
             .unwrap()
@@ -123,7 +123,7 @@ impl Bingo {
         let mut boards: Vec<Board> = vec![];
         let mut board_numbers: Vec<Number> = Vec::with_capacity(BOARD_WIDTH * BOARD_HEIGHT);
 
-        while let Some(line) = lines.next() {
+        for line in lines {
             // Push the board and reset the numbers
             if line.trim().is_empty() {
                 boards.push(Board {
@@ -170,7 +170,31 @@ pub fn solve_part1(input: &str) -> usize {
 
 #[aoc(day4, part2)]
 pub fn solve_part2(input: &str) -> usize {
-    0
+    let bingo = Bingo::from_input(input);
+
+    let mut boards: Vec<Board> = bingo.boards;
+
+    let mut last_winning_unmarked_sum: usize = 0;
+    let mut last_number: usize = 0;
+
+    for number in &bingo.numbers {
+        last_number = *number;
+
+        boards.drain_filter(|board| {
+            if board.mark(last_number) {
+                last_winning_unmarked_sum = board.sum_of_unmarked_numbers();
+                true
+            } else {
+                false
+            }
+        });
+
+        if boards.is_empty() {
+            break;
+        }
+    }
+
+    last_number * last_winning_unmarked_sum
 }
 
 #[cfg(test)]
@@ -230,5 +254,32 @@ mod tests {
         let expected = 4512;
 
         assert_eq!(expected, solve_part1(input))
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input = r#"7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+
+22 13 17 11  0
+ 8  2 23  4 24
+21  9 14 16  7
+ 6 10  3 18  5
+ 1 12 20 15 19
+
+ 3 15  0  2 22
+ 9 18 13 17  5
+19  8  7 25 23
+20 11 10 24  4
+14 21 16 12  6
+
+14 21 17 24  4
+10 16 15  9 19
+18  8 23 26 20
+22 11 13  6  5
+ 2  0 12  3  7"#;
+
+        let expected = 1924;
+
+        assert_eq!(expected, solve_part2(input))
     }
 }

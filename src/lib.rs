@@ -1,3 +1,4 @@
+#![feature(drain_filter)]
 extern crate aoc_runner;
 
 #[macro_use]
