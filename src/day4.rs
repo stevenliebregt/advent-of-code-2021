@@ -1,3 +1,5 @@
+#![allow(unused_results)]
+
 use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
@@ -89,17 +91,18 @@ impl Board {
 
 impl Display for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+
         for i in 0..BOARD_HEIGHT {
             for j in 0..BOARD_WIDTH {
                 let num = &self.numbers[(i * BOARD_WIDTH) + j];
                 let color = if num.marked { COLOR_GREEN } else { COLOR_RED };
-
-                write!(f, "{}{:<5}{}", color, num.value, COLOR_RESET);
+                s.push_str(&format!("{}{:<5}{}", color, num.value, COLOR_RESET));
             }
-            write!(f, "\n");
+            s.push('\n');
         }
 
-        Ok(())
+        write!(f, "{}", s)
     }
 }
 

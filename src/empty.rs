@@ -15,3 +15,8 @@ pub fn solve_part1(input: &[usize]) -> usize {
 pub fn solve_part2(input: &[usize]) -> usize {
     0
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+}
