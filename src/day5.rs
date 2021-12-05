@@ -22,8 +22,8 @@ impl FromStr for Point {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (x, y) = s.split_once(',').unwrap();
         Ok(Self {
-            x: x.parse().unwrap(),
-            y: y.parse().unwrap(),
+            x: x.parse()?,
+            y: y.parse()?,
         })
     }
 }
@@ -68,19 +68,11 @@ impl FromStr for Line {
     }
 }
 
-#[aoc_generator(day5)]
-pub fn input_generator(input: &str) -> Vec<Line> {
-    input
-        .lines()
-        .map(|line| Line::from_str(line).unwrap())
-        .collect()
-}
-
-#[aoc(day5, part1)]
-pub fn solve_part1(input: &[Line]) -> usize {
-    input
-        .iter()
-        .filter(|line| line.is_horizontal_or_vertical())
+fn calculate_overlaps<'a, It>(lines: It) -> usize
+where
+    It: Iterator<Item = &'a Line>,
+{
+    lines
         .flat_map(|line| line.points()) // Get all points in a single flat list
         .fold(HashMap::<Point, usize>::new(), |mut map, point| {
             *map.entry(point).or_insert(0) += 1;
@@ -91,9 +83,24 @@ pub fn solve_part1(input: &[Line]) -> usize {
         .count()
 }
 
+#[aoc_generator(day5)]
+pub fn input_generator(input: &str) -> Vec<Line> {
+    input
+        .lines()
+        .map(|line| Line::from_str(line).unwrap())
+        .collect()
+}
+
+#[aoc(day5, part1)]
+pub fn solve_part1(input: &[Line]) -> usize {
+    let lines = input.iter().filter(|line| line.is_horizontal_or_vertical());
+
+    calculate_overlaps(lines)
+}
+
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &[Line]) -> usize {
-    0
+    calculate_overlaps(input.iter())
 }
 
 #[cfg(test)]
@@ -103,7 +110,10 @@ mod tests {
     #[test]
     fn test_generate_points_for_line_x_up() {
         // Line should produce points 0;0 1;0 2;0
-        let line = Line(Point { x: 0, y: 0 }, Point { x: 2, y: 0 });
+        let line = Line {
+            start: Point { x: 0, y: 0 },
+            end: Point { x: 2, y: 0 },
+        };
         let points = line.points();
 
         assert_eq!(3, points.len());
@@ -126,7 +136,10 @@ mod tests {
     #[test]
     fn test_generate_points_for_line_x_down() {
         // Line should produce points 0;0 1;0 2;0
-        let line = Line(Point { x: 2, y: 0 }, Point { x: 0, y: 0 });
+        let line = Line {
+            start: Point { x: 2, y: 0 },
+            end: Point { x: 0, y: 0 },
+        };
         let points = line.points();
 
         assert_eq!(3, points.len());
@@ -165,5 +178,31 @@ mod tests {
         let result = solve_part1(&lines);
 
         assert_eq!(5, result)
+    }
+
+    #[test]
+    fn test_generate_diagonal() {
+        // Line should produce points 0;0 1;0 2;0
+        let line = Line {
+            start: Point { x: 1, y: 1 },
+            end: Point { x: 3, y: 3 },
+        };
+        let points = line.points();
+
+        assert_eq!(3, points.len());
+
+        let mut it = points.iter();
+
+        let point_a = it.next().unwrap();
+        assert_eq!(1, point_a.x);
+        assert_eq!(1, point_a.y);
+
+        let point_b = it.next().unwrap();
+        assert_eq!(2, point_b.x);
+        assert_eq!(2, point_b.y);
+
+        let point_c = it.next().unwrap();
+        assert_eq!(3, point_c.x);
+        assert_eq!(3, point_c.y);
     }
 }
