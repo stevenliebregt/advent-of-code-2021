@@ -16,6 +16,12 @@ impl Submarine {
     }
 }
 
+impl Default for Submarine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub enum Direction {
     Forward,
     Up,
@@ -73,7 +79,7 @@ pub fn input_generator(input: &str) -> Vec<Instruction> {
 
 #[aoc(day2, part1)]
 pub fn solve_part1(input: &[Instruction]) -> isize {
-    let mut submarine = Submarine::new();
+    let mut submarine = Submarine::default();
 
     input
         .iter()
@@ -88,7 +94,7 @@ pub fn solve_part1(input: &[Instruction]) -> isize {
 
 #[aoc(day2, part2)]
 pub fn solve_part2(input: &[Instruction]) -> isize {
-    let mut submarine = Submarine::new();
+    let mut submarine = Submarine::default();
 
     input
         .iter()
