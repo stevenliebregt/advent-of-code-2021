@@ -22,12 +22,12 @@ pub fn input_generator(input: &str) -> Vec<usize> {
 
 #[aoc(day6, part1)]
 pub fn solve_part1(input: &[usize]) -> usize {
-    simulate_lanternfish_school(&input, 80)
+    simulate_lanternfish_school(input, 80)
 }
 
 #[aoc(day6, part2)]
 pub fn solve_part2(input: &[usize]) -> usize {
-    simulate_lanternfish_school(&input, 256)
+    simulate_lanternfish_school(input, 256)
 }
 
 #[cfg(test)]
