@@ -34,29 +34,30 @@ impl FromStr for Input {
 }
 
 fn create_polymer(template: PolymerTemplate, rules: PairInsertionRules, steps: usize) -> usize {
-    let result = (0..steps).fold(
-        template.iter().tuple_windows::<(_, _)>().counts(),
-        |acc, _| {
-            acc.iter()
-                .fold(HashMap::new(), |mut new_acc, (&(a, b), count)| {
-                    let insertion = &rules[&(*a, *b)];
+    let mut counts = (0..steps)
+        .fold(
+            template.iter().tuple_windows::<(_, _)>().counts(),
+            |acc, _| {
+                acc.iter()
+                    .fold(HashMap::new(), |mut new_acc, (&(a, b), count)| {
+                        let insertion = &rules[&(*a, *b)];
 
-                    *new_acc.entry((a, insertion)).or_insert(0) += count;
-                    *new_acc.entry((insertion, b)).or_insert(0) += count;
+                        *new_acc.entry((a, insertion)).or_insert(0) += count;
+                        *new_acc.entry((insertion, b)).or_insert(0) += count;
 
-                    new_acc
-                })
-        },
-    );
-
-    // Only count first char of tuple as we're using windows
-    let mut counts = result.iter().fold(
-        HashMap::<char, usize>::new(),
-        |mut acc, ((&a, _), count)| {
-            *acc.entry(a).or_insert(0) += count;
-            acc
-        },
-    );
+                        new_acc
+                    })
+            },
+        )
+        .iter()
+        .fold(
+            HashMap::<char, usize>::new(),
+            |mut acc, ((&a, _), count)| {
+                // Only count first char of tuple as we're using windows
+                *acc.entry(a).or_insert(0) += count;
+                acc
+            },
+        );
 
     // Add the last char of the start because the window cuts it off
     *counts.entry(*template.last().unwrap()).or_insert(0) += 1;
