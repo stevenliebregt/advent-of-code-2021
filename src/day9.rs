@@ -7,7 +7,7 @@ pub struct Cave(BTreeMap<(i32, i32), u32>, BTreeSet<(i32, i32)>);
 
 impl Cave {
     pub fn height_at(&self, (x, y): (i32, i32)) -> u32 {
-        self.0.get(&(x, y)).unwrap_or(&u32::MAX).clone()
+        *self.0.get(&(x, y)).unwrap_or(&u32::MAX)
     }
 
     pub fn find_low_points(&self) -> Vec<(&(i32, i32), &u32)> {
@@ -40,13 +40,11 @@ impl Cave {
             }
 
             // Search to find where there is height 9
-            if (0..9).contains(&self.height_at((x, y))) {
-                if basin.insert((x, y)) {
-                    queue.push_back((x, y - 1));
-                    queue.push_back((x - 1, y));
-                    queue.push_back((x + 1, y));
-                    queue.push_back((x, y + 1));
-                }
+            if (0..9).contains(&self.height_at((x, y))) && basin.insert((x, y)) {
+                queue.push_back((x, y - 1));
+                queue.push_back((x - 1, y));
+                queue.push_back((x + 1, y));
+                queue.push_back((x, y + 1));
             }
         }
 
@@ -91,7 +89,7 @@ pub fn solve_part2(input: &str) -> u32 {
         .map(|(position, _)| cave.explore_basin(**position) as u32)
         .collect::<Vec<_>>();
 
-    basins.sort();
+    basins.sort_unstable();
     basins.iter().rev().take(3).product()
 }
 

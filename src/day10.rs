@@ -67,7 +67,7 @@ pub fn solve_part2(input: &str) -> usize {
         })
         .collect::<Vec<usize>>();
 
-    scores.sort();
+    scores.sort_unstable();
 
     scores[scores.len() / 2]
 }
